@@ -6,3 +6,7 @@ export const firebaseAuthAPI = axios.create({
     key: import.meta.env.VITE_FIREBASE_API_KEY,
   },
 });
+
+export const firebaseDb=axios.create({
+  baseURL: import.meta.env.VITE_FIREBASE_DB_URL,
+});

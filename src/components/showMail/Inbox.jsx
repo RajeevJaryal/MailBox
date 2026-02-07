@@ -1,6 +1,11 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchInbox, markRead, selectMail } from "../redux/slices/mailSlice";
+import {
+  fetchInbox,
+  markRead,
+  selectMail,
+  deleteInboxMail,
+} from "../redux/slices/mailSlice";
 
 export default function Inbox() {
   const dispatch = useDispatch();
@@ -18,6 +23,15 @@ export default function Inbox() {
     if (!mail.read) {
       dispatch(markRead({ userEmail, mailId: mail.id }));
     }
+  };
+
+  const handleDelete = () => {
+    if (!selected || !userEmail) return;
+
+    const ok = window.confirm("Delete this mail?");
+    if (!ok) return;
+
+    dispatch(deleteInboxMail({ userEmail, mailId: selected.id }));
   };
 
   return (
@@ -66,26 +80,45 @@ export default function Inbox() {
                           {m.subject || "(no subject)"}
                         </div>
                         <div className={`small ${m.read ? "text-muted" : ""}`}>
-                          From: {m.from}
+                          From: {m.from || "(unknown)"}
                         </div>
                       </div>
-                      <small className={selected?.id === m.id ? "text-white-50" : "text-muted"}>
-                        {m.createdAt ? new Date(m.createdAt).toLocaleString() : ""}
+
+                      <small
+                        className={
+                          selected?.id === m.id ? "text-white-50" : "text-muted"
+                        }
+                      >
+                        {m.createdAt
+                          ? new Date(m.createdAt).toLocaleString()
+                          : ""}
                       </small>
                     </div>
                   </button>
                 ))}
             </div>
 
-            {error && <div className="alert alert-danger m-3 mb-0">{error}</div>}
+            {error && (
+              <div className="alert alert-danger m-3 mb-0">{error}</div>
+            )}
           </div>
         </div>
 
         {/* Right: Mail viewer */}
         <div className="col-12 col-lg-7">
           <div className="card shadow-sm">
-            <div className="card-header bg-white">
+            <div className="card-header bg-white d-flex justify-content-between align-items-center">
               <span className="fw-semibold">Mail</span>
+
+              {/* Delete only when a mail is selected */}
+              {selected && (
+                <button
+                  className="btn btn-sm btn-outline-danger"
+                  onClick={handleDelete}
+                >
+                  Delete
+                </button>
+              )}
             </div>
 
             <div className="card-body">
@@ -94,9 +127,14 @@ export default function Inbox() {
               ) : (
                 <>
                   <h5 className="mb-1">{selected.subject || "(no subject)"}</h5>
+
                   <div className="text-muted small mb-3">
-                    <div><b>From:</b> {selected.from}</div>
-                    <div><b>To:</b> {selected.to}</div>
+                    <div>
+                      <b>From:</b> {selected.from || "(unknown)"}
+                    </div>
+                    <div>
+                      <b>To:</b> {selected.to}
+                    </div>
                     <div>
                       <b>Date:</b>{" "}
                       {selected.createdAt
@@ -107,7 +145,6 @@ export default function Inbox() {
 
                   <hr />
 
-                  {/* Render stored HTML body */}
                   <div
                     dangerouslySetInnerHTML={{
                       __html: selected.html || selected.bodyHtml || "",

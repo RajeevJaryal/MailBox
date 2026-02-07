@@ -37,7 +37,7 @@ export const sendMail = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err?.message || "Failed to send mail");
     }
-  }
+  },
 );
 
 /* =========================
@@ -58,7 +58,7 @@ export const fetchInbox = createAsyncThunk(
     } catch {
       return rejectWithValue("Failed to load inbox");
     }
-  }
+  },
 );
 
 /* =========================
@@ -76,7 +76,7 @@ export const fetchSent = createAsyncThunk(
     } catch {
       return rejectWithValue("Failed to load sent data");
     }
-  }
+  },
 );
 
 /* =========================
@@ -98,7 +98,32 @@ export const markRead = createAsyncThunk(
     } catch {
       return rejectWithValue("Failed to mark mail as read");
     }
-  }
+  },
+);
+export const deleteInboxMail = createAsyncThunk(
+  "mail/deleteInboxMail",
+  async ({ userEmail, mailId }, { rejectWithValue }) => {
+    try {
+      const key = emailToKey(userEmail);
+      await firebaseDb.delete(`/mailboxes/${key}/inbox/${mailId}.json`);
+      return mailId;
+    } catch (err) {
+      return rejectWithValue("Failed to delete inbox mail");
+    }
+  },
+);
+
+export const deleteSentMail = createAsyncThunk(
+  "mail/deleteSentMail",
+  async ({ userEmail, mailId }, { rejectWithValue }) => {
+    try {
+      const key = emailToKey(userEmail);
+      await firebaseDb.delete(`/mailboxes/${key}/sent/${mailId}.json`);
+      return mailId;
+    } catch (err) {
+      return rejectWithValue("Failed to delete sent mail");
+    }
+  },
 );
 
 /* =========================
@@ -107,11 +132,11 @@ export const markRead = createAsyncThunk(
 const mailSlice = createSlice({
   name: "mail",
   initialState: {
-    sending: false,        // used while sending a mail
-    loadingInbox: false,  // used while fetching inbox
-    inbox: [],             // inbox mails
-    sent: [],              // sent mails
-    selected: null,        // currently opened mail
+    sending: false, // used while sending a mail
+    loadingInbox: false, // used while fetching inbox
+    inbox: [], // inbox mails
+    sent: [], // sent mails
+    selected: null, // currently opened mail
     error: null,
   },
 
@@ -157,7 +182,7 @@ const mailSlice = createSlice({
         // keep opened mail updated if inbox refreshes
         if (state.selected?.id) {
           const updated = action.payload.find(
-            (m) => m.id === state.selected.id
+            (m) => m.id === state.selected.id,
           );
           if (updated) state.selected = updated;
         }
@@ -185,6 +210,29 @@ const mailSlice = createSlice({
           state.selected.read = true;
         }
       });
+    // ---- delete inbox ----
+    builder.addCase(deleteInboxMail.fulfilled, (state, action) => {
+      const id = action.payload;
+
+      // remove from list
+      state.inbox = state.inbox.filter((m) => m.id !== id);
+
+      // if currently opened mail is deleted, close it
+      if (state.selected?.id === id) {
+        state.selected = null;
+      }
+    });
+
+    // ---- delete sent ----
+    builder.addCase(deleteSentMail.fulfilled, (state, action) => {
+      const id = action.payload;
+
+      state.sent = state.sent.filter((m) => m.id !== id);
+
+      if (state.selected?.id === id) {
+        state.selected = null;
+      }
+    });
   },
 });
 

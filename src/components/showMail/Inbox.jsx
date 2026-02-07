@@ -7,6 +7,7 @@ import {
   deleteInboxMail,
 } from "../redux/slices/mailSlice";
 import { useNavigate } from "react-router-dom";
+import { useInboxPolling } from "../customhooks/useInboxPolling";
 
 
 
@@ -17,19 +18,8 @@ export default function Inbox() {
   const userEmail = useSelector((s) => s.auth.email);
   const { inbox, loadingInbox, selected, error } = useSelector((s) => s.mail);
 
-  useEffect(() => {
-  if (!userEmail) return;
+  useInboxPolling(userEmail);
 
-  // first load
-  dispatch(fetchInbox({ userEmail }));
-
-  // poll every 2 seconds
-  const id = setInterval(() => {
-    dispatch(fetchInbox({ userEmail }));
-  }, 2000);
-
-  return () => clearInterval(id);
-}, [dispatch, userEmail]);
 const openMail = (mail) => {
   dispatch(selectMail(mail));
 

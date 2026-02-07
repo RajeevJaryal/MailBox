@@ -7,24 +7,13 @@ import {
   deleteSentMail,
 } from "../redux/slices/mailSlice";
 import { useNavigate } from "react-router-dom";
+import { useSentPolling } from "../customhooks/useSentPolling";
 export default function Sent() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userEmail = useSelector((s) => s.auth.email);
   const { sent, selected, error } = useSelector((s) => s.mail);
-
-  // poll every 2 seconds
-  useEffect(() => {
-    if (!userEmail) return;
-
-    dispatch(fetchSent({ userEmail }));
-
-    const id = setInterval(() => {
-      dispatch(fetchSent({ userEmail }));
-    }, 2000);
-
-    return () => clearInterval(id);
-  }, [dispatch, userEmail]);
+useSentPolling(userEmail);
 
   const openMail = (mail) => {
     dispatch(selectMail(mail));

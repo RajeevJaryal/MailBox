@@ -8,32 +8,13 @@ import Home from "./components/home/HomePage";
 import ComposeMail from "./components/showMail/ComposeMail";
 import Inbox from "./components/showMail/Inbox";
 import Sent from "./components/showMail/Sent";
-
-import { restoreSession, logout } from "./components/redux/slices/AuthSlice";
+import { useAuthSession } from "./components/customhooks/useAuthSession";
 
 function App() {
-  const dispatch = useDispatch();
+  
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
 
-  // restore session on refresh
-  useEffect(() => {
-    const saved = localStorage.getItem("auth");
-    if (!saved) return;
-
-    try {
-      const data = JSON.parse(saved);
-
-      // expired / invalid session
-      if (!data?.token || !data?.expiresAt || Date.now() >= data.expiresAt) {
-        dispatch(logout());
-        return;
-      }
-
-      dispatch(restoreSession(data));
-    } catch {
-      dispatch(logout());
-    }
-  }, [dispatch]);
+  useAuthSession();
 
   return (
     <Routes>

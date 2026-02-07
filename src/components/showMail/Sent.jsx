@@ -1,27 +1,42 @@
 import React, { useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchSent, selectMail, clearSelected } from "../redux/slices/mailSlice";
-
+import {
+  fetchSent,
+  selectMail,
+  deleteSentMail,
+} from "../redux/slices/mailSlice";
+import { useNavigate } from "react-router-dom";
 export default function Sent() {
   const dispatch = useDispatch();
-
+  const navigate = useNavigate();
   const userEmail = useSelector((s) => s.auth.email);
   const { sent, selected, error } = useSelector((s) => s.mail);
 
+  // poll every 2 seconds
   useEffect(() => {
-    // if user not logged in, nothing to load
     if (!userEmail) return;
 
-    // load sent mails when page opens
     dispatch(fetchSent({ userEmail }));
 
-    // optional: clear selected when leaving this page
-    return () => dispatch(clearSelected());
+    const id = setInterval(() => {
+      dispatch(fetchSent({ userEmail }));
+    }, 2000);
+
+    return () => clearInterval(id);
   }, [dispatch, userEmail]);
 
   const openMail = (mail) => {
-    // just open mail on right panel
     dispatch(selectMail(mail));
+  };
+
+  const handleDelete = () => {
+    if (!selected || !userEmail) return;
+
+    const ok = window.confirm("Delete this sent mail?");
+    if (!ok) return;
+
+    dispatch(deleteSentMail({ userEmail, mailId: selected.id }));
   };
 
   return (
@@ -31,15 +46,13 @@ export default function Sent() {
         <div className="col-12 col-lg-5">
           <div className="card shadow-sm">
             <div className="card-header bg-white d-flex align-items-center justify-content-between">
-              <span className="fw-semibold">Sent</span>
-
+              
               <button
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => userEmail && dispatch(fetchSent({ userEmail }))}
-                disabled={!userEmail}
-              >
-                Refresh
-              </button>
+      className="btn btn-sm btn-outline-secondary"
+      onClick={() => navigate("/home")}
+    >
+      ← Back
+    </button><span className="fw-semibold">Sent</span>
             </div>
 
             <div className="list-group list-group-flush">
@@ -67,10 +80,12 @@ export default function Sent() {
                         </div>
                         <div
                           className={`small ${
-                            selected?.id === m.id ? "text-white-50" : "text-muted"
+                            selected?.id === m.id
+                              ? "text-white-50"
+                              : "text-muted"
                           }`}
                         >
-                          To: {m.to}
+                          To: {m.to || "(unknown)"}
                         </div>
                       </div>
 
@@ -79,7 +94,9 @@ export default function Sent() {
                           selected?.id === m.id ? "text-white-50" : "text-muted"
                         }
                       >
-                        {m.createdAt ? new Date(m.createdAt).toLocaleString() : ""}
+                        {m.createdAt
+                          ? new Date(m.createdAt).toLocaleString()
+                          : ""}
                       </small>
                     </div>
                   </button>
@@ -93,8 +110,18 @@ export default function Sent() {
         {/* Right: Mail viewer */}
         <div className="col-12 col-lg-7">
           <div className="card shadow-sm">
-            <div className="card-header bg-white">
+            <div className="card-header bg-white d-flex justify-content-between align-items-center">
               <span className="fw-semibold">Mail</span>
+
+              {/* Delete only when a mail is selected */}
+              {selected && (
+                <button
+                  className="btn btn-sm btn-outline-danger"
+                  onClick={handleDelete}
+                >
+                  Delete
+                </button>
+              )}
             </div>
 
             <div className="card-body">
@@ -121,7 +148,6 @@ export default function Sent() {
 
                   <hr />
 
-                  {/* render stored HTML body */}
                   <div
                     dangerouslySetInnerHTML={{
                       __html: selected.html || selected.bodyHtml || "",

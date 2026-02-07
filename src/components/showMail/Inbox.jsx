@@ -6,24 +6,39 @@ import {
   selectMail,
   deleteInboxMail,
 } from "../redux/slices/mailSlice";
+import { useNavigate } from "react-router-dom";
+
+
 
 export default function Inbox() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const userEmail = useSelector((s) => s.auth.email);
   const { inbox, loadingInbox, selected, error } = useSelector((s) => s.mail);
 
   useEffect(() => {
-    if (!userEmail) return;
-    dispatch(fetchInbox({ userEmail }));
-  }, [dispatch, userEmail]);
+  if (!userEmail) return;
 
-  const openMail = (mail) => {
-    dispatch(selectMail(mail));
-    if (!mail.read) {
-      dispatch(markRead({ userEmail, mailId: mail.id }));
-    }
-  };
+  // first load
+  dispatch(fetchInbox({ userEmail }));
+
+  // poll every 2 seconds
+  const id = setInterval(() => {
+    dispatch(fetchInbox({ userEmail }));
+  }, 2000);
+
+  return () => clearInterval(id);
+}, [dispatch, userEmail]);
+const openMail = (mail) => {
+  dispatch(selectMail(mail));
+
+  // mark as read only if it was unread
+  if (!mail.read) {
+    dispatch(markRead({ userEmail, mailId: mail.id }));
+  }
+};
+
 
   const handleDelete = () => {
     if (!selected || !userEmail) return;
@@ -41,7 +56,13 @@ export default function Inbox() {
         <div className="col-12 col-lg-5">
           <div className="card shadow-sm">
             <div className="card-header bg-white d-flex align-items-center justify-content-between">
-              <span className="fw-semibold">Inbox</span>
+              
+              <button
+      className="btn btn-sm btn-outline-secondary"
+      onClick={() => navigate("/home")}
+    >
+      ← Back
+    </button><span className="fw-semibold">Inbox</span>
               <button
                 className="btn btn-sm btn-outline-secondary"
                 onClick={() => userEmail && dispatch(fetchInbox({ userEmail }))}

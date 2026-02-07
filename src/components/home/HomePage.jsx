@@ -78,7 +78,6 @@ const Home = () => {
       <div className="row g-0">
         {/* ================= SIDEBAR ================= */}
         <aside className="d-none d-md-block col-md-3 col-lg-2 border-end bg-light min-vh-100 p-3">
-
           <Link to="/compose" className="btn btn-primary w-100 mb-3">
             + Compose
           </Link>
@@ -173,21 +172,15 @@ const Home = () => {
               <div className="card shadow-sm h-100">
                 <div className="card-header bg-white d-flex justify-content-between align-items-center">
                   <span className="fw-semibold">Recent Inbox</span>
-                  <button
-                    className="btn btn-sm btn-outline-secondary"
-                    onClick={() => dispatch(fetchInbox({ userEmail }))}
-                    disabled={!userEmail || loadingInbox}
-                  >
-                    {loadingInbox ? "…" : "Refresh"}
-                  </button>
+                  <Link to="/inbox" className="small text-decoration-none">
+                    Show all
+                  </Link>
                 </div>
 
                 <div className="list-group list-group-flush">
                   {recentInbox.length === 0 ? (
                     <div className="text-center py-5">
-                      <div className="text-muted fw-semibold">
-                        No mails yet
-                      </div>
+                      <div className="text-muted fw-semibold">No mails yet</div>
                       <div className="small text-muted mt-1">
                         New mails will show here
                       </div>
@@ -208,7 +201,7 @@ const Home = () => {
                             {m.createdAt
                               ? new Date(m.createdAt).toLocaleDateString(
                                   "en-IN",
-                                  { day: "2-digit", month: "short" }
+                                  { day: "2-digit", month: "short" },
                                 )
                               : ""}
                           </small>
@@ -228,21 +221,15 @@ const Home = () => {
               <div className="card shadow-sm h-100">
                 <div className="card-header bg-white d-flex justify-content-between align-items-center">
                   <span className="fw-semibold">Recent Sent</span>
-                  <button
-                    className="btn btn-sm btn-outline-secondary"
-                    onClick={() => dispatch(fetchSent({ userEmail }))}
-                    disabled={!userEmail}
-                  >
-                    Refresh
-                  </button>
+                  <Link to="/sent" className="small text-decoration-none">
+                    Show all
+                  </Link>
                 </div>
 
                 <div className="list-group list-group-flush">
                   {recentSent.length === 0 ? (
                     <div className="text-center py-5">
-                      <div className="text-muted fw-semibold">
-                        No mails yet
-                      </div>
+                      <div className="text-muted fw-semibold">No mails yet</div>
                       <div className="small text-muted mt-1">
                         Sent mails will show here
                       </div>
@@ -251,14 +238,17 @@ const Home = () => {
                     recentSent.map((m) => (
                       <div key={m.id} className="list-group-item">
                         <div className="d-flex justify-content-between mb-1">
-                          <div className="text-truncate fw-semibold" style={{ maxWidth: "75%" }}>
+                          <div
+                            className="text-truncate fw-semibold"
+                            style={{ maxWidth: "75%" }}
+                          >
                             {m.subject || "(no subject)"}
                           </div>
                           <small className="text-muted">
                             {m.createdAt
                               ? new Date(m.createdAt).toLocaleDateString(
                                   "en-IN",
-                                  { day: "2-digit", month: "short" }
+                                  { day: "2-digit", month: "short" },
                                 )
                               : ""}
                           </small>

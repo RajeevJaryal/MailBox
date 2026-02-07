@@ -138,6 +138,8 @@ const mailSlice = createSlice({
     sent: [], // sent mails
     selected: null, // currently opened mail
     error: null,
+    lastInboxHash: null,
+
   },
 
   reducers: {
@@ -172,21 +174,31 @@ const mailSlice = createSlice({
 
       /* ---- fetch inbox ---- */
       .addCase(fetchInbox.pending, (state) => {
-        state.loadingInbox = true;
-        state.error = null;
-      })
-      .addCase(fetchInbox.fulfilled, (state, action) => {
-        state.loadingInbox = false;
-        state.inbox = action.payload;
+  if (state.inbox.length === 0) state.loadingInbox = true;
+  state.error = null;
+})
 
-        // keep opened mail updated if inbox refreshes
-        if (state.selected?.id) {
-          const updated = action.payload.find(
-            (m) => m.id === state.selected.id,
-          );
-          if (updated) state.selected = updated;
-        }
-      })
+      .addCase(fetchInbox.fulfilled, (state, action) => {
+  state.loadingInbox = false;
+
+  // make a lightweight signature so we don't update state if nothing changed
+  const nextHash = action.payload
+    .map((m) => `${m.id}:${m.read ? 1 : 0}:${m.createdAt}`)
+    .join("|");
+
+  // if same as last time → skip updating inbox (prevents useless rerenders)
+  if (state.lastInboxHash === nextHash) return;
+
+  state.lastInboxHash = nextHash;
+  state.inbox = action.payload;
+
+  // keep opened mail updated if inbox refreshes
+  if (state.selected?.id) {
+    const updated = action.payload.find((m) => m.id === state.selected.id);
+    if (updated) state.selected = updated;
+  }
+})
+
       .addCase(fetchInbox.rejected, (state, action) => {
         state.loadingInbox = false;
         state.error = action.payload;

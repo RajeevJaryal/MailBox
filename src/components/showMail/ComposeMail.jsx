@@ -8,7 +8,7 @@ import { sendMail } from "../redux/slices/mailSlice";
 export default function ComposeMail() {
   const dispatch = useDispatch();
 
-  // ✅ take logged-in email from auth slice
+  //  take logged-in email from auth slice
   const fromEmail = useSelector((s) => s.auth.email);
 
   const { sending, error } = useSelector((s) => s.mail);
@@ -21,7 +21,7 @@ export default function ComposeMail() {
     const plainText =
       editorState?.getCurrentContent?.()?.getPlainText?.() || "";
 
-    // ✅ don't allow send if sender email missing
+    //  don't allow send if sender email missing
     return (
       !!fromEmail &&
       toEmail?.includes("@") &&

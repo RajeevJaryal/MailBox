@@ -19,7 +19,7 @@ const AuthForm = () => {
 
   useEffect(() => {
     if (error) dispatch(clearAuthError());
-  }, [mode]); // eslint-disable-line
+  }, [mode]); 
 
   const submitHandler = (e) => {
     e.preventDefault();

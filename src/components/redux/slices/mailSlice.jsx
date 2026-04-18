@@ -174,7 +174,7 @@ const mailSlice = createSlice({
         // keep selected mail in sync if inbox refreshes
         if (state.selected?.id) {
           const updated = action.payload.find((m) => m.id === state.selected.id);
-          // ✅ if selected mail no longer exists in inbox (e.g. deleted elsewhere), clear it
+          //  if selected mail no longer exists in inbox (e.g. deleted elsewhere), clear it
           state.selected = updated ?? null;
         }
       })
@@ -184,15 +184,15 @@ const mailSlice = createSlice({
       })
 
       /* ---- fetch sent ---- */
-      .addCase(fetchSent.pending, (state) => {         // ✅ added
+      .addCase(fetchSent.pending, (state) => {         //  added
         if (state.sent.length === 0) state.loadingSent = true;
         state.sentError = null;
       })
       .addCase(fetchSent.fulfilled, (state, action) => {
-        state.loadingSent = false;                     // ✅ added
+        state.loadingSent = false;                     //  added
         state.sent = action.payload;
       })
-      .addCase(fetchSent.rejected, (state, action) => { // ✅ added
+      .addCase(fetchSent.rejected, (state, action) => { //  added
         state.loadingSent = false;
         state.sentError = action.payload;
       })
